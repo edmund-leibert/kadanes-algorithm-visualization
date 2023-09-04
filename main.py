@@ -1,5 +1,5 @@
 import streamlit as st
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import numpy as np
 
 def kadanes_algorithm(arr):
@@ -24,7 +24,7 @@ def kadanes_algorithm(arr):
 st.title("Kadane's Algorithm Visualization")
 
 # User input for array
-user_input = st.text_input("Enter a list of integers separated by commas:", "1, -2, 3, 4, -1, 2, 1, -5, 4")
+user_input = st.text_input("Enter a list of integers separated by commas:", "2, 3, -1, -20, 5, 10")
 arr = list(map(int, user_input.split(',')))
 
 # Calculate using Kadane's Algorithm
@@ -32,15 +32,26 @@ max_sum, start, end = kadanes_algorithm(arr)
 st.write(f"Largest Sum Contiguous Subarray: {arr[start:end+1]}")
 st.write(f"Sum: {max_sum}")
 
-# Visualization using Matplotlib
-plt.figure(figsize=(10, 5))
-plt.axhline(0, color="gray", lw=0.5)
-plt.plot(arr, "o-", label="Array elements")
-plt.fill_between(range(start, end + 1), arr[start:end + 1], color="green", alpha=0.5, label="Max Sum Subarray")
-plt.title("Kadane's Algorithm Visualization")
-plt.xlabel("Index")
-plt.ylabel("Value")
-plt.legend()
+# Initialize Plotly Figure
+fig = go.Figure()
 
-# Show plot in Streamlit
-st.pyplot(plt.gcf())
+# X-Axis annotations
+xaxis_labels = [f"{i} ({val})" for i, val in enumerate(arr)]
+
+# Graph all contiguous subarrays starting from different positions
+for start_idx in range(len(arr)):
+    subarray_cumsum = np.cumsum(arr[start_idx:])
+    fig.add_scatter(x=xaxis_labels[start_idx:], y=subarray_cumsum, mode='lines', name=f'Starting at {start_idx}')
+
+# Highlight the largest sum contiguous subarray
+highlighted_subarray_cumsum = np.cumsum(arr[start:end+1])
+fig.add_scatter(x=xaxis_labels[start:end+1], y=highlighted_subarray_cumsum, mode='lines', name='Largest Sum Subarray', line=dict(color='green', width=4))
+
+# Set Figure Layout
+fig.update_layout(
+    title="Kadane's Algorithm Visualization",
+    xaxis_title="Index (Value at Index)",
+    yaxis_title="Cumulative Sum"
+)
+
+st.plotly_chart(fig)
